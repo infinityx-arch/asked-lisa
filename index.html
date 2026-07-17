@@ -404,11 +404,11 @@
 
   <div id="celebration-layer"></div>
 
-  <div class="music-toggle" id="musicToggle" role="button" aria-label="Play romantic music">
-    <span class="music-icon">🎵</span>
+  <div class="music-toggle" id="musicToggle" role="button" tabindex="0" aria-label="Mute music">
+    <span class="music-icon" id="musicIcon">🎵</span>
     <span class="equalizer"><span></span><span></span><span></span><span></span></span>
   </div>
-  <audio id="bgAudio" src="backsound.mp3" loop preload="none"></audio>
+  <audio id="bgAudio" src="backsound.mp3" loop preload="auto"></audio>
 
 <script>
 (function(){
@@ -543,23 +543,64 @@
     showScene('closingYes');
   });
 
-  /* ---------- Music toggle ---------- */
+  /* ---------- Music: auto-start with a manual mute/unmute toggle ---------- */
   var musicToggle = document.getElementById('musicToggle');
+  var musicIcon = document.getElementById('musicIcon');
   var audio = document.getElementById('bgAudio');
   var isPlaying = false;
+  var userMuted = false; // true once the person explicitly pauses via the toggle
+
+  function setMusicUI(playing){
+    isPlaying = playing;
+    musicToggle.classList.toggle('playing', playing);
+    musicIcon.textContent = playing ? '🎵' : '🔇';
+    musicToggle.setAttribute('aria-label', playing ? 'Mute music' : 'Play music');
+  }
+
+  function tryPlay(){
+    var p = audio.play();
+    if (p && typeof p.then === 'function') {
+      p.then(function(){ setMusicUI(true); }).catch(function(){ setMusicUI(false); });
+    } else {
+      setMusicUI(true);
+    }
+  }
+
+  function tryPause(){
+    audio.pause();
+    setMusicUI(false);
+  }
+
+  /* Attempt to auto-start the moment the page loads. */
+  tryPlay();
+
+  /* Most browsers block unmuted autoplay until the visitor interacts with
+     the page. As a graceful fallback, the very first tap/click/keypress
+     anywhere (other than the toggle itself, which is handled separately)
+     retries playback — so the song starts as soon as the site is touched,
+     unless the person has explicitly muted it with the toggle button. */
+  function firstGestureHandler(e){
+    if (isPlaying || userMuted) return;
+    if (e.target && e.target.closest && e.target.closest('#musicToggle')) return;
+    tryPlay();
+  }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function(evt){
+    document.addEventListener(evt, firstGestureHandler, { passive: true });
+  });
 
   musicToggle.addEventListener('click', function(){
-    if (!isPlaying) {
-      audio.play().then(function(){
-        isPlaying = true;
-        musicToggle.classList.add('playing');
-      }).catch(function(){
-        /* file may be missing or blocked; fail silently */
-      });
+    if (isPlaying) {
+      userMuted = true;
+      tryPause();
     } else {
-      audio.pause();
-      isPlaying = false;
-      musicToggle.classList.remove('playing');
+      userMuted = false;
+      tryPlay();
+    }
+  });
+  musicToggle.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      musicToggle.click();
     }
   });
 
