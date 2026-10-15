@@ -1,0 +1,789 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Written in the Sunset</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* Layout concept: one fixed painted beach, drawn live on a canvas. The letter scrolls over it as sheets of smoked glass, and the sky ages from golden hour to twilight as she reads. */
+:root {
+  --sunset: #ff9a5a;
+  --rose: #e8688a;
+  --gold: #f2c879;
+  --cream: #fff3e2;
+  --brown: #3b2024;
+  --ocean: #0f2a4a;
+  --bg: #1a0f1c;
+  --ink: var(--cream);
+  --glass: rgba(36, 18, 30, 0.64);
+  --glass-line: rgba(255, 232, 205, 0.22);
+  --f-display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --f-letter: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --f-body: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: dark;
+}
+html { scroll-behavior: smooth; }
+html.calm { scroll-behavior: auto; }
+html.locked, html.locked body { overflow: hidden; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 1rem/1.5 var(--f-body);
+  padding-block: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: clip;
+}
+* { box-sizing: border-box; }
+button { font-family: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+#bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+.veil {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 40%, rgba(24, 8, 24, 0.42) 100%),
+    linear-gradient(to bottom, rgba(24,8,24,0.18), rgba(24,8,24,0) 22%);
+}
+main { position: relative; z-index: 2; }
+
+/* controls */
+.controls {
+  position: fixed; z-index: 20; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: max(16px, env(safe-area-inset-right, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+}
+.pill {
+  font: 500 0.8rem/1 var(--f-body); letter-spacing: 0.02em;
+  color: var(--cream); background: rgba(36, 18, 30, 0.58);
+  border: 1px solid var(--glass-line); border-radius: 999px; padding: 0.6rem 0.95rem;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); cursor: pointer;
+  transition: background 0.3s, border-color 0.3s;
+}
+.pill:hover { background: rgba(60, 28, 44, 0.72); border-color: rgba(255, 232, 205, 0.42); }
+.pill[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+.pill:disabled { opacity: 0.6; cursor: default; }
+
+/* opening */
+.open {
+  position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; text-align: center;
+  padding: 24px max(20px, env(safe-area-inset-left, 0px)) 24px max(20px, env(safe-area-inset-right, 0px));
+  transition: opacity 1.3s ease;
+}
+.open.leaving { opacity: 0; pointer-events: none; }
+.open::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(30, 10, 28, 0.55), rgba(30, 10, 28, 0) 68%);
+}
+.open-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1.4rem; max-width: 34rem; }
+.o-1 { margin: 0; font: italic 400 clamp(3.2rem, 14vw, 6.6rem)/1 var(--f-display); text-shadow: 0 4px 40px rgba(60, 20, 40, 0.55); }
+.o-2 { margin: 0; font: italic 400 clamp(1.2rem, 3.8vw, 1.6rem)/1.5 var(--f-letter); text-shadow: 0 2px 20px rgba(40, 10, 30, 0.7); text-wrap: balance; }
+.hint { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.6rem 0.8rem; font-size: 0.88rem; color: rgba(255, 243, 226, 0.88); text-shadow: 0 1px 12px rgba(40, 10, 30, 0.8); }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.o-1 { animation: rise 1.4s 0.5s both; }
+.o-2 { animation: rise 1.4s 1.9s both; }
+.o-3 { animation: rise 1.2s 3.3s both; }
+.o-4 { animation: rise 1.2s 4s both; }
+.calm .o-1, .calm .o-2, .calm .o-3, .calm .o-4 { animation: none; }
+@media (prefers-reduced-motion: reduce) { .o-1, .o-2, .o-3, .o-4 { animation: none; } }
+
+.cta {
+  font: 600 1.02rem/1.2 var(--f-body); color: #3a1a1f; border: 0; cursor: pointer; border-radius: 999px;
+  padding: 1.05rem 1.8rem; background: linear-gradient(135deg, #ffd48c, #ff9a6e 55%, #ec6f8e);
+  box-shadow: 0 12px 40px -10px rgba(255, 150, 100, 0.8);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+.cta:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 16px 46px -8px rgba(255, 150, 100, 0.95); }
+.cta.ghost { background: var(--glass); color: var(--cream); box-shadow: none; border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.cta.ghost:hover { box-shadow: none; border-color: rgba(255, 232, 205, 0.5); }
+.linkbtn { font: 500 0.88rem/1 var(--f-body); color: var(--gold); background: none; border: 0; border-bottom: 1px solid rgba(242, 200, 121, 0.5); padding: 0.3rem 0; cursor: pointer; }
+.linkbtn:disabled { color: rgba(255,243,226,.6); border-color: transparent; cursor: default; }
+
+/* letter */
+.letter-sec { display: flex; justify-content: center; padding-block: clamp(3rem, 10svh, 6rem); }
+.letter {
+  width: min(100%, 40rem); display: flex; flex-direction: column; gap: 1.2rem;
+  padding: clamp(1.5rem, 5vw, 2.9rem); border-radius: 26px;
+  background: var(--glass); border: 1px solid var(--glass-line);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: 0 40px 90px -40px rgba(10, 2, 14, 0.8);
+}
+.ornament { display: flex; justify-content: center; align-items: center; gap: 14px; opacity: 0.85; height: 30px; }
+.ornament svg { height: 100%; width: auto; }
+.letter-title { margin: 0; font: italic 400 clamp(2.05rem, 6.6vw, 3.3rem)/1.08 var(--f-display); text-wrap: balance; color: #ffe2b8; text-align: center; }
+.w { display: inline-block; white-space: nowrap; }
+.ch { opacity: 0; transition: opacity 0.6s ease; }
+.ch.on { opacity: 1; }
+.calm .ch { opacity: 1; transition: none; }
+.letter p { margin: 0; font: 400 clamp(1.08rem, 2.7vw, 1.22rem)/1.72 var(--f-letter); color: var(--cream); }
+.letter p.punch { font: italic 400 clamp(1.55rem, 4.8vw, 2.2rem)/1.2 var(--f-display); color: var(--gold); text-wrap: balance; padding-block: 0.4rem; }
+.letter p.soft { font-style: italic; }
+.letter p.sign { font: italic 400 1.7rem/1 var(--f-display); text-align: right; color: #ffe2b8; }
+
+.rv { transition: opacity 1s ease, transform 1s ease; }
+.js .rv:not(.in) { opacity: 0; transform: translateY(16px); }
+.calm .rv { opacity: 1 !important; transform: none !important; transition: none; }
+
+/* scenes */
+.scene { min-height: min(82svh, 46rem); display: grid; place-items: center; text-align: center; padding-block: 2rem; }
+.scene-text { position: relative; margin: 0; max-width: 24ch; font: italic 400 clamp(1.8rem, 5.8vw, 3.3rem)/1.18 var(--f-display); color: var(--cream); text-shadow: 0 2px 26px rgba(40, 10, 30, 0.7); text-wrap: balance; }
+.scene-text::before { content: ''; position: absolute; inset: -2.5rem -2rem; z-index: -1; background: radial-gradient(ellipse at center, rgba(30, 10, 28, 0.5), rgba(30, 10, 28, 0) 70%); }
+.stage { width: min(100%, 34rem); margin-top: 1.5rem; }
+.stage svg { display: block; width: 100%; height: auto; }
+.steps ellipse { opacity: 0; }
+@keyframes step { from { opacity: 0; } to { opacity: 0.42; } }
+.stage.in .steps ellipse { animation: step 0.7s both; animation-delay: calc(var(--i) * 0.3s); }
+.calm .steps ellipse { opacity: 0.42; animation: none !important; }
+.scene-c { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* the question */
+.ask { display: flex; justify-content: center; padding-block: clamp(3rem, 10svh, 6rem) clamp(2rem, 6svh, 4rem); }
+.ask-card {
+  width: min(100%, 38rem); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.4rem;
+  padding: clamp(1.8rem, 6vw, 3.2rem); border-radius: 28px; background: var(--glass); border: 1px solid var(--glass-line);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: 0 40px 90px -40px rgba(10, 2, 14, 0.8);
+}
+.ask-card h2 { margin: 0; font: italic 400 clamp(2.4rem, 9vw, 4.3rem)/1.02 var(--f-display); color: #ffe2b8; text-wrap: balance; }
+.ask-card p { margin: 0; font: 400 1.1rem/1.6 var(--f-letter); color: var(--cream); max-width: 30rem; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 0.9rem; justify-content: center; }
+.result { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.result h3 { margin: 0; font: italic 400 clamp(2rem, 7vw, 3.2rem)/1.05 var(--f-display); color: var(--gold); text-wrap: balance; }
+.result h3:focus { outline: none; }
+.note { min-height: 1.6em; color: var(--gold); }
+footer { text-align: center; padding-block: 1rem 3rem; font: italic 1.05rem var(--f-letter); color: rgba(255, 243, 226, 0.8); text-shadow: 0 1px 14px rgba(30, 8, 28, 0.9); }
+
+@media (max-width: 480px) {
+  .controls .pill { font-size: 0.76rem; padding: 0.55rem 0.8rem; }
+  .letter p { line-height: 1.68; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="shell" viewBox="0 0 40 36">
+      <path d="M20 34 C8 28 2 18 4 11 C10 4 30 4 36 11 C38 18 32 28 20 34Z" fill="currentColor"/>
+      <rect x="16" y="31" width="8" height="5" rx="2.5" fill="currentColor"/>
+      <path d="M20 34 L8 10 M20 34 L14 7 M20 34 L20 6 M20 34 L26 7 M20 34 L32 10" stroke="rgba(120,60,50,.45)" stroke-width="1.2" fill="none"/>
+    </symbol>
+    <symbol id="flower" viewBox="0 0 32 32">
+      <g fill="currentColor">
+        <circle cx="24" cy="16" r="5.5"/><circle cx="18.47" cy="23.61" r="5.5"/><circle cx="9.53" cy="20.7" r="5.5"/>
+        <circle cx="9.53" cy="11.3" r="5.5"/><circle cx="18.47" cy="8.39" r="5.5"/>
+      </g>
+      <circle cx="16" cy="16" r="3.2" fill="#f2c879"/>
+    </symbol>
+  </defs>
+</svg>
+
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+
+<div class="controls" id="controls" hidden>
+  <button class="pill" id="btnMusic" type="button" aria-pressed="false">♪ Music: off</button>
+  <button class="pill" id="btnCalm" type="button" aria-pressed="false">Calm mode: off</button>
+</div>
+
+<div class="open" id="open">
+  <div class="open-inner">
+    <h1 class="o-1">Hey, you. ❤️</h1>
+    <p class="o-2">I made something special for you.<br>Something I’ve wanted to tell you for a while.</p>
+    <button class="cta o-3" id="enter" type="button">There’s something I want to tell you ✨</button>
+    <div class="hint o-4">
+      <span>It’s better with sound.</span>
+      <button class="linkbtn" id="hintMusic" type="button" aria-pressed="false">♪ Turn music on</button>
+    </div>
+  </div>
+</div>
+
+<main id="story" hidden>
+  <section class="letter-sec">
+    <div class="letter">
+      <div class="ornament" aria-hidden="true">
+        <svg viewBox="0 0 40 36" style="color:#f6d5c3"><use href="#shell"/></svg>
+        <svg viewBox="0 0 32 32" style="color:#f4a3b8"><use href="#flower"/></svg>
+        <svg viewBox="0 0 40 36" style="color:#f6d5c3"><use href="#shell"/></svg>
+      </div>
+      <h2 class="letter-title" id="title" tabindex="-1">To the girl who makes my world a little warmer...</h2>
+      <p class="rv">There’s something I’ve been wanting to tell you, and I think there’s no better way to say it than from my heart.</p>
+      <p class="rv">I don’t know exactly what the future will look like, and I know that life won’t always be easy. There will be days when everything feels right, when we laugh until we forget the time, and when simply being together makes the whole world feel a little brighter.</p>
+      <p class="rv">But I also know there may be days when things get difficult. Days when we misunderstand each other, when we’re tired, when we make mistakes, or when life doesn’t go the way we hoped.</p>
+      <p class="rv">And if there’s one thing I want you to know, it’s that I don’t want to be here only for the easy days.</p>
+      <p class="rv punch">I want to be here for the hard ones, too.</p>
+    </div>
+  </section>
+
+  <section class="scene" id="sceneA">
+    <p class="scene-text rv">If I could choose one place to be right now,<br>it would be anywhere I could share a moment with you.</p>
+  </section>
+
+  <section class="letter-sec">
+    <div class="letter">
+      <p class="rv">I want us to learn how to understand each other, to listen when one of us needs to be heard, to apologize when we’re wrong, and to keep choosing kindness even when things aren’t perfect.</p>
+      <p class="rv">I don’t expect either of us to be perfect. We both have our flaws, our insecurities, our weaknesses, and the parts of ourselves we’re still learning to understand.</p>
+      <p class="rv">I want us to accept each other as we are, while also helping each other grow into better versions of ourselves.</p>
+      <p class="rv">I want to celebrate your happiness, support your dreams, comfort you when you’re sad, and remind you of your worth on the days when you forget it.</p>
+      <p class="rv">I want the little things with you. The random conversations, the silly jokes, the quiet moments, the unexpected adventures, and even the ordinary days that somehow become special just because you’re there.</p>
+      <p class="rv">I’m not promising that I’ll always know the right words or that I’ll never make mistakes. But I want to keep learning, keep communicating, and keep making an honest effort to treat your heart with care.</p>
+    </div>
+  </section>
+
+  <section class="scene" id="sceneB">
+    <p class="scene-text rv">Even when life isn’t perfect,<br>I hope we can still find a little light in each other.</p>
+  </section>
+
+  <section class="letter-sec">
+    <div class="letter">
+      <p class="rv">Because to me, love isn’t about finding someone who has no flaws. It’s about finding someone whose imperfections you understand, whose growth you want to support, and whose hand you want to hold as you both navigate this unpredictable life.</p>
+      <p class="rv">And if you let me, I’d love to discover that kind of love with you.</p>
+      <p class="rv soft">Not just when the sun is shining, but when the skies turn gray, too.</p>
+      <p class="rv soft">Not just when life is easy, but when we have to face its challenges together.</p>
+      <p class="rv">Because I don’t want something that only looks beautiful in the perfect moments.</p>
+      <p class="rv">I want something real, something warm, something honest, and something we both feel safe choosing, day after day.</p>
+      <p class="rv punch">And right now, the person I want to ask to begin that journey with me is you.</p>
+      <p class="rv sign" id="sign" hidden></p>
+    </div>
+  </section>
+
+  <section class="scene scene-c" id="sceneC">
+    <p class="scene-text rv">Wherever this road goes,<br>I’d like to walk it right next to you.</p>
+    <div class="stage rv" id="stage">
+      <svg viewBox="0 0 420 250" role="img" aria-label="Two small silhouettes holding hands on the shore at night, with footprints behind them and shells in the sand">
+        <defs>
+          <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stop-color="#ffd696" stop-opacity="0.6"/>
+            <stop offset="0.55" stop-color="#e8688a" stop-opacity="0.2"/>
+            <stop offset="1" stop-color="#e8688a" stop-opacity="0"/>
+          </radialGradient>
+          <g id="couple" fill="#150c1a" stroke="rgba(255,226,190,.45)" stroke-width="0.8">
+            <circle cx="222" cy="88" r="10"/>
+            <rect x="208" y="100" width="28" height="54" rx="10"/>
+            <rect x="210" y="150" width="9" height="32" rx="3"/>
+            <rect x="225" y="150" width="9" height="32" rx="3"/>
+            <ellipse cx="266" cy="101" rx="11" ry="16"/>
+            <circle cx="266" cy="94" r="9"/>
+            <path d="M255 106 Q266 100 277 106 L290 160 Q266 168 242 160 Z"/>
+            <rect x="259" y="160" width="6" height="22" rx="3"/>
+            <rect x="268" y="160" width="6" height="22" rx="3"/>
+            <g stroke="#150c1a" stroke-width="6" stroke-linecap="round" fill="none">
+              <path d="M208 108 L204 140"/>
+              <path d="M236 108 L250 136"/>
+              <path d="M255 111 L250 136"/>
+              <path d="M277 111 L283 142"/>
+            </g>
+            <circle cx="250" cy="137" r="4"/>
+          </g>
+        </defs>
+        <ellipse cx="245" cy="120" rx="200" ry="115" fill="url(#glow)"/>
+        <path d="M0 180 Q105 172 210 180 T420 178 V250 H0Z" fill="rgba(20,10,22,.5)"/>
+        <path d="M0 180 Q105 172 210 180 T420 178" fill="none" stroke="rgba(255,243,226,.35)" stroke-width="1.5"/>
+        <use href="#couple" transform="translate(0 364) scale(1 -1)" opacity="0.16"/>
+        <g class="steps" id="steps" fill="#150c1a"></g>
+        <use href="#couple"/>
+        <use href="#shell" x="318" y="206" width="30" height="27" style="color:#f6d5c3"/>
+        <use href="#shell" x="362" y="224" width="20" height="18" style="color:#f0b9a3" transform="rotate(-18 372 233)"/>
+        <use href="#flower" x="36" y="218" width="22" height="22" style="color:#f4a3b8"/>
+        <use href="#flower" x="72" y="230" width="16" height="16" style="color:#fff3e2"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="ask">
+    <div class="ask-card">
+      <h2>Lisa Oktovia Ramadhani, will you be my girlfriend?</h2>
+      <div id="askBody" class="ask-body" style="display:contents">
+        <p>No pressure at all. Whatever you decide, I’m glad you read this far.</p>
+        <div class="btn-row">
+          <button class="cta" id="yes" type="button">Yes ❤️</button>
+          <button class="cta ghost" id="later" type="button">I need a little time</button>
+        </div>
+        <p class="note" id="note" aria-live="polite"></p>
+      </div>
+      <div class="result" id="result" hidden>
+        <h3 id="resultTitle" tabindex="-1">You just made my whole sunset. ❤️</h3>
+        <p>Thank you for choosing this with me. Now come tell me yourself. I’ll be the one smiling.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>Made with all my heart, just for you.</footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // Add your name here to sign the letter. Leave empty for no signature.
+  var FROM_NAME = '';
+
+  var root = document.documentElement;
+  root.classList.add('js', 'locked');
+  var $ = function (id) { return document.getElementById(id); };
+  var story = $('story'), openEl = $('open'), controls = $('controls');
+  var btnMusic = $('btnMusic'), btnCalm = $('btnCalm'), hintMusic = $('hintMusic');
+  var titleEl = $('title');
+  var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var calm = mq.matches;
+
+  if (FROM_NAME) { var s = $('sign'); s.textContent = '— ' + FROM_NAME; s.hidden = false; }
+
+  /* ---------- helpers ---------- */
+  var hex = function (h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; };
+  var mix = function (a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; };
+  var rgb = function (c, a) {
+    return a === undefined ? 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')'
+      : 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + a + ')';
+  };
+  var clamp = function (x, a, b) { a = a === undefined ? 0 : a; b = b === undefined ? 1 : b; return Math.min(b, Math.max(a, x)); };
+  var smooth = function (a, b, x) { x = clamp((x - a) / (b - a)); return x * x * (3 - 2 * x); };
+  var frac = function (x) { return x - Math.floor(x); };
+
+  var SKY = [
+    ['#6a5aa0', '#e8688a', '#ff9a5a', '#ffd493'],
+    ['#352f66', '#a24f7c', '#e0715f', '#f2a766'],
+    ['#0a1430', '#1b2858', '#45396a', '#855878']
+  ].map(function (k) { return k.map(hex); });
+  var SEA = [['#e59a6e', '#1a3a63'], ['#a8587a', '#12284a'], ['#3b3a68', '#060e1e']].map(function (k) { return k.map(hex); });
+  var SAND = [['#d9a77b', '#b98a62'], ['#8c5f6a', '#5b4150'], ['#2f2838', '#19141f']].map(function (k) { return k.map(hex); });
+  function pal(set, d) {
+    var i = d < 0.5 ? 0 : 1, t = d < 0.5 ? d / 0.5 : (d - 0.5) / 0.5;
+    return set[i].map(function (c, k) { return mix(c, set[i + 1][k], t); });
+  }
+
+  /* ---------- canvas scene ---------- */
+  var cv = $('bg'), ctx = cv.getContext('2d');
+  var W = 0, H = 0, HY = 0, SY = 0, DPR = 1;
+  var T = 0, D = 0;
+  var stars = [], clouds = [], motes = [], birds = [], hearts = [];
+  var nextBird = 2, nextHeart = 3;
+
+  function build() {
+    stars = []; clouds = []; motes = [];
+    var n = Math.round(W * HY / 5200) + 60;
+    for (var i = 0; i < n; i++) stars.push({ x: Math.random() * W, y: Math.random() * HY * 0.82, r: 0.4 + Math.random() * 1.2, p: Math.random() * 6.28 });
+    for (i = 0; i < 6; i++) clouds.push({ x: Math.random() * W, y: HY * (0.1 + Math.random() * 0.5), w: W * (0.14 + Math.random() * 0.2), k: 0.1 + Math.random() * 0.12, v: 3 + Math.random() * 6 });
+    for (i = 0; i < 46; i++) motes.push({ x: Math.random() * W, y: Math.random() * H, r: 1 + Math.random() * 2.2, v: 4 + Math.random() * 10, p: Math.random() * 6.28 });
+  }
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    HY = H * 0.6; SY = H * 0.88;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    build();
+  }
+
+  function heart(x, y, s) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + s * 0.35);
+    ctx.bezierCurveTo(x - s, y - s * 0.3, x - s * 0.55, y - s * 1.0, x, y - s * 0.45);
+    ctx.bezierCurveTo(x + s * 0.55, y - s * 1.0, x + s, y - s * 0.3, x, y + s * 0.35);
+    ctx.fill();
+  }
+
+  function glitter(x0, col, strength, spread) {
+    if (strength < 0.01) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    var g = ctx.createLinearGradient(0, HY, 0, SY);
+    g.addColorStop(0, rgb(col, 0.34 * strength));
+    g.addColorStop(1, rgb(col, 0.05 * strength));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(x0 - 8, HY); ctx.lineTo(x0 + 8, HY);
+    ctx.lineTo(x0 + spread * 1.15, SY); ctx.lineTo(x0 - spread * 1.15, SY);
+    ctx.closePath(); ctx.fill();
+    ctx.lineCap = 'round';
+    for (var i = 0; i < 80; i++) {
+      var sd = i * 12.9898;
+      var t = frac(Math.sin(sd) * 43758.5453);
+      var yy = HY + (SY - HY) * Math.pow(t, 1.7) * 0.97 + 3;
+      var hw = spread * (0.1 + t);
+      var rx = (frac(Math.sin(sd * 2.1) * 137.31) - 0.5) * 2 * hw;
+      var len = 4 + t * 34 * (0.4 + frac(Math.sin(sd * 3.7) * 91.7));
+      var a = strength * (0.2 + 0.8 * Math.max(0, Math.sin(T * 1.8 + sd * 3))) * (1 - Math.abs(rx) / hw * 0.6);
+      var x = x0 + rx + Math.sin(T * 0.7 + sd) * 4;
+      ctx.strokeStyle = rgb(col, a * 0.9);
+      ctx.lineWidth = 1 + t * 1.8;
+      ctx.beginPath(); ctx.moveTo(x - len / 2, yy); ctx.lineTo(x + len / 2, yy); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function shoreY(x) { return SY + Math.sin(x * 0.008 + T * 0.5) * 5 + Math.sin(T * 0.4) * 9; }
+
+  function draw() {
+    var d = D, i, g;
+    var sky = pal(SKY, d);
+    g = ctx.createLinearGradient(0, 0, 0, HY);
+    g.addColorStop(0, rgb(sky[0])); g.addColorStop(0.42, rgb(sky[1]));
+    g.addColorStop(0.78, rgb(sky[2])); g.addColorStop(1, rgb(sky[3]));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, HY + 1);
+
+    var sy = window.scrollY || 0;
+    var starA = smooth(0.5, 0.95, d);
+    if (starA > 0.01) {
+      for (i = 0; i < stars.length; i++) {
+        var s = stars[i];
+        var a = starA * (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(T * 1.4 + s.p))) * (1 - s.y / HY * 0.5);
+        ctx.fillStyle = 'rgba(255,244,226,' + a.toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(s.x, s.y - sy * 0.01, s.r, 0, 6.2832); ctx.fill();
+      }
+    }
+
+    var moonA = smooth(0.6, 1, d);
+    var mx = W * (W < 700 ? 0.78 : 0.2), my = HY * 0.3, mr = Math.max(16, Math.min(W, H) * 0.045);
+    if (moonA > 0.01) {
+      var mg = ctx.createRadialGradient(mx, my, mr * 0.5, mx, my, mr * 5);
+      mg.addColorStop(0, 'rgba(255,238,205,' + (0.3 * moonA) + ')'); mg.addColorStop(1, 'rgba(255,238,205,0)');
+      ctx.fillStyle = mg; ctx.fillRect(mx - mr * 5, my - mr * 5, mr * 10, mr * 10);
+      ctx.save();
+      ctx.beginPath(); ctx.arc(mx, my, mr, 0, 6.2832); ctx.clip();
+      ctx.globalAlpha = moonA; ctx.fillStyle = '#fff1d6';
+      ctx.beginPath(); ctx.rect(mx - mr * 2, my - mr * 2, mr * 4, mr * 4);
+      ctx.arc(mx + mr * 0.5, my - mr * 0.18, mr * 0.9, 0, 6.2832, true);
+      ctx.fill('evenodd');
+      ctx.restore();
+    }
+
+    var alt = 0.30 - 0.44 * smooth(0, 0.62, d);
+    var sunX = W * (W < 700 ? 0.5 : 0.6), sunY = HY - alt * H;
+    var sunR = Math.max(26, Math.min(W, H) * 0.07);
+    var sunVis = smooth(-0.16, 0.04, alt);
+    if (sunVis > 0.01) {
+      var sg = ctx.createRadialGradient(sunX, sunY, sunR * 0.4, sunX, sunY, sunR * 7);
+      sg.addColorStop(0, 'rgba(255,200,120,' + (0.6 * sunVis) + ')');
+      sg.addColorStop(0.35, 'rgba(255,140,100,' + (0.2 * sunVis) + ')');
+      sg.addColorStop(1, 'rgba(255,120,120,0)');
+      ctx.fillStyle = sg; ctx.fillRect(0, 0, W, HY + 1);
+    }
+
+    var cc = mix([255, 176, 150], [130, 105, 165], d);
+    for (i = 0; i < clouds.length; i++) {
+      var c = clouds[i];
+      var cx = ((c.x + T * c.v + sy * 0.05) % (W + c.w * 2) + (W + c.w * 2)) % (W + c.w * 2) - c.w;
+      ctx.save();
+      ctx.translate(cx, c.y); ctx.scale(1, c.k);
+      var cg = ctx.createRadialGradient(0, 0, 0, 0, 0, c.w);
+      cg.addColorStop(0, rgb(cc, 0.34 * (1 - 0.5 * d))); cg.addColorStop(1, rgb(cc, 0));
+      ctx.fillStyle = cg; ctx.fillRect(-c.w, -c.w, c.w * 2, c.w * 2);
+      ctx.restore();
+    }
+
+    if (sunVis > 0.01) {
+      var dg = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
+      dg.addColorStop(0, '#fff6d8'); dg.addColorStop(0.7, '#ffd98a'); dg.addColorStop(1, '#ffb866');
+      ctx.globalAlpha = sunVis; ctx.fillStyle = dg;
+      ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, 6.2832); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    var sea = pal(SEA, d);
+    g = ctx.createLinearGradient(0, HY, 0, SY);
+    g.addColorStop(0, rgb(sea[0])); g.addColorStop(1, rgb(sea[1]));
+    ctx.fillStyle = g; ctx.fillRect(0, HY, W, SY - HY + 26);
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, HY, W, SY - HY); ctx.clip();
+    ctx.translate(sunX, HY); ctx.scale(1, 0.45);
+    var rg = ctx.createRadialGradient(0, 0, 0, 0, 0, W * 0.5);
+    rg.addColorStop(0, 'rgba(255,200,130,' + (0.5 * sunVis) + ')');
+    rg.addColorStop(0.6, 'rgba(255,140,110,' + (0.12 * sunVis) + ')');
+    rg.addColorStop(1, 'rgba(255,140,110,0)');
+    ctx.fillStyle = rg; ctx.fillRect(-W, -10, W * 2, H * 2);
+    ctx.restore();
+
+    var hz = ctx.createLinearGradient(0, HY - 26, 0, HY + 14);
+    hz.addColorStop(0, rgb(sky[3], 0)); hz.addColorStop(0.65, rgb(sky[3], 0.7)); hz.addColorStop(1, rgb(sky[3], 0));
+    ctx.fillStyle = hz; ctx.fillRect(0, HY - 26, W, 40);
+
+    var N = 16, wr = 255 - 75 * d, wg = 228 - 38 * d, wb = 205 + 50 * d;
+    ctx.lineWidth = 1.2;
+    for (var r = 0; r < N; r++) {
+      var t = r / (N - 1);
+      var y0 = HY + (SY - HY) * Math.pow(t, 1.7) + 4;
+      var amp = 0.6 + 5 * t, fq = 0.05 - 0.035 * t;
+      var ph = T * (0.5 + 0.5 * t) * (r % 2 ? 1 : -1) + r * 1.7;
+      ctx.strokeStyle = 'rgba(' + (wr | 0) + ',' + (wg | 0) + ',' + (wb | 0) + ',' + (0.05 + 0.16 * t).toFixed(3) + ')';
+      ctx.beginPath();
+      for (var x = 0; x <= W + 12; x += 12) {
+        var yy = y0 + Math.sin(x * fq + ph) * amp + Math.sin(x * fq * 2.3 - ph * 1.3) * amp * 0.4;
+        if (x === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+      }
+      ctx.stroke();
+    }
+
+    glitter(sunX, [255, 226, 160], sunVis * (1 - 0.2 * d), W * 0.12);
+    if (moonA > 0.05) glitter(mx, [220, 226, 255], moonA * 0.5, W * 0.05);
+
+    var sand = pal(SAND, d);
+    g = ctx.createLinearGradient(0, SY, 0, H);
+    g.addColorStop(0, rgb(sand[0])); g.addColorStop(1, rgb(sand[1]));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(0, shoreY(0));
+    for (x = 0; x <= W + 14; x += 14) ctx.lineTo(x, shoreY(x));
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+
+    var wet = ctx.createLinearGradient(0, SY + 16, 0, SY + H * 0.07);
+    wet.addColorStop(0, rgb(sky[3], 0.34)); wet.addColorStop(1, rgb(sky[3], 0));
+    ctx.fillStyle = wet; ctx.fillRect(0, SY + 16, W, H * 0.07);
+
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(255,248,240,' + (0.55 - 0.25 * d).toFixed(3) + ')'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (x = 0; x <= W + 14; x += 14) { if (x === 0) ctx.moveTo(x, shoreY(x)); else ctx.lineTo(x, shoreY(x)); }
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,248,240,' + (0.26 - 0.12 * d).toFixed(3) + ')'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (x = 0; x <= W + 14; x += 14) { var fy = shoreY(x) - 11 - Math.sin(T * 0.4) * 4; if (x === 0) ctx.moveTo(x, fy); else ctx.lineTo(x, fy); }
+    ctx.stroke();
+
+    var bA = clamp(1 - d / 0.8) * 0.75;
+    if (bA > 0.02) {
+      ctx.lineWidth = 1.7; ctx.lineCap = 'round';
+      for (i = 0; i < birds.length; i++) {
+        var b = birds[i], f = Math.sin(b.ph) * b.s * 0.42;
+        ctx.strokeStyle = 'rgba(46,22,36,' + bA.toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.moveTo(b.x - b.s, b.y - f);
+        ctx.quadraticCurveTo(b.x - b.s * 0.45, b.y - b.s * 0.45 - f * 0.2, b.x, b.y);
+        ctx.quadraticCurveTo(b.x + b.s * 0.45, b.y - b.s * 0.45 - f * 0.2, b.x + b.s, b.y - f);
+        ctx.stroke();
+      }
+    }
+
+    for (i = 0; i < motes.length; i++) {
+      var m = motes[i];
+      var ma = 0.25 + 0.45 * (0.5 + 0.5 * Math.sin(T * 1.2 + m.p));
+      ctx.fillStyle = 'rgba(255,226,170,' + (ma * 0.16).toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(m.x, m.y, m.r * 3.2, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = 'rgba(255,240,205,' + ma.toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.2832); ctx.fill();
+    }
+
+    for (i = 0; i < hearts.length; i++) {
+      var h = hearts[i], al = h.burst ? (1 - h.life / h.max) * 0.9 : Math.sin(Math.PI * clamp(h.life / h.max)) * 0.4;
+      ctx.fillStyle = 'rgba(255,140,170,' + clamp(al).toFixed(3) + ')';
+      heart(h.x, h.y, h.s);
+    }
+  }
+
+  function update(dt) {
+    var i;
+    for (i = 0; i < motes.length; i++) {
+      var m = motes[i];
+      m.y -= m.v * dt; m.x += Math.sin(T * 0.5 + m.p) * 6 * dt;
+      if (m.y < -10) { m.y = H + 10; m.x = Math.random() * W; }
+    }
+    nextBird -= dt;
+    if (nextBird <= 0 && D < 0.7 && birds.length < 5) {
+      var n = 1 + Math.floor(Math.random() * 3), by = HY * (0.18 + Math.random() * 0.45), sp = 40 + Math.random() * 30;
+      for (i = 0; i < n; i++) birds.push({ x: -20 - i * 34, y: by + i * 12 + Math.random() * 8, v: sp, s: 6 + Math.random() * 6, ph: Math.random() * 6, fr: 3 + Math.random() * 2 });
+      nextBird = 7 + Math.random() * 7;
+    }
+    for (i = birds.length - 1; i >= 0; i--) {
+      var b = birds[i];
+      b.x += b.v * dt; b.ph += b.fr * dt; b.y += Math.sin(T * 0.8 + i) * 4 * dt;
+      if (b.x > W + 40) birds.splice(i, 1);
+    }
+    nextHeart -= dt;
+    if (nextHeart <= 0) {
+      hearts.push({ x: Math.random() * W, y: H + 20, vx: 0, vy: -(30 + Math.random() * 30), s: 7 + Math.random() * 9, life: 0, max: 9 + Math.random() * 4, sway: Math.random() * 6.28, burst: false });
+      nextHeart = 3.2 + Math.random() * 3;
+    }
+    for (i = hearts.length - 1; i >= 0; i--) {
+      var h = hearts[i];
+      h.life += dt;
+      if (h.burst) { h.vy += 70 * dt; h.vx *= 0.99; h.x += h.vx * dt; h.y += h.vy * dt; }
+      else { h.y += h.vy * dt; h.x += Math.sin(h.life * 1.3 + h.sway) * 14 * dt; }
+      if (h.life >= h.max) hearts.splice(i, 1);
+    }
+  }
+
+  function burst(n) {
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * 6.2832, sp = 80 + Math.random() * 320;
+      hearts.push({ x: W / 2, y: H * 0.55, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 140, s: 8 + Math.random() * 16, life: 0, max: 2.4 + Math.random() * 1.6, burst: true });
+    }
+  }
+
+  /* ---------- scroll to sky ---------- */
+  var aS = 0, aA = 0, aB = 0;
+  function anchors() {
+    var sy = window.scrollY || 0;
+    var mid = function (el) { var r = el.getBoundingClientRect(); return r.top + sy + r.height / 2; };
+    aS = window.innerHeight * 0.5;
+    aA = mid($('sceneA')); aB = mid($('sceneB'));
+  }
+  function target() {
+    if (aA <= aS || aB <= aA) return 0;
+    var y = (window.scrollY || 0) + window.innerHeight * 0.5;
+    if (y <= aS) return 0;
+    if (y <= aA) return 0.32 * (y - aS) / (aA - aS);
+    if (y <= aB) return 0.32 + 0.68 * (y - aA) / (aB - aA);
+    return 1;
+  }
+
+  /* ---------- loop ---------- */
+  var raf = 0, last = 0, queued = false;
+  function frame(ts) {
+    var dt = Math.min(0.05, (ts - last) / 1000 || 0.016);
+    last = ts; T += dt;
+    D += (target() - D) * Math.min(1, dt * 3.2);
+    update(dt); draw();
+    raf = requestAnimationFrame(frame);
+  }
+  function startLoop() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } }
+  function stopLoop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+  function renderStatic() {
+    if (queued) return; queued = true;
+    requestAnimationFrame(function () { queued = false; D = target(); T = 3; draw(); });
+  }
+
+  /* ---------- calm mode ---------- */
+  var titleTimer = 0;
+  function finishTitle() {
+    clearInterval(titleTimer);
+    var cs = document.querySelectorAll('#title .ch');
+    for (var i = 0; i < cs.length; i++) cs[i].classList.add('on');
+  }
+  function setCalm(v) {
+    calm = v;
+    root.classList.toggle('calm', v);
+    btnCalm.setAttribute('aria-pressed', String(v));
+    btnCalm.textContent = 'Calm mode: ' + (v ? 'on' : 'off');
+    if (v) { stopLoop(); birds = []; hearts = []; finishTitle(); renderStatic(); }
+    else { startLoop(); }
+  }
+  btnCalm.addEventListener('click', function () { setCalm(!calm); });
+
+  /* ---------- title typing ---------- */
+  var titleText = titleEl.textContent;
+  titleEl.setAttribute('aria-label', titleText);
+  titleEl.innerHTML = titleText.split(' ').map(function (w) {
+    return '<span class="w" aria-hidden="true">' + Array.prototype.map.call(w, function (c) { return '<span class="ch">' + c + '</span>'; }).join('') + '</span>';
+  }).join(' ');
+  var titleStarted = false;
+  function typeTitle() {
+    if (titleStarted) return; titleStarted = true;
+    if (calm) { finishTitle(); return; }
+    var cs = document.querySelectorAll('#title .ch'), i = 0;
+    titleTimer = setInterval(function () {
+      if (i < cs.length) cs[i++].classList.add('on'); else clearInterval(titleTimer);
+    }, 38);
+  }
+
+  /* ---------- reveal on scroll ---------- */
+  var io = null;
+  if ('IntersectionObserver' in window) {
+    io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('in');
+        if (e.target === titleEl) typeTitle();
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.2, rootMargin: '0px 0px -6% 0px' });
+    document.querySelectorAll('.rv').forEach(function (el) { io.observe(el); });
+    io.observe(titleEl);
+  } else {
+    document.querySelectorAll('.rv').forEach(function (el) { el.classList.add('in'); });
+    finishTitle(); titleStarted = true;
+  }
+
+  /* footprints */
+  (function () {
+    var g = $('steps'), out = '';
+    for (var i = 0; i < 10; i++) {
+      var x = 26 + i * 19, y = 212 - i * 2.4 + (i % 2 ? 4 : -4);
+      out += '<ellipse cx="' + x + '" cy="' + y.toFixed(1) + '" rx="4.4" ry="2.3" transform="rotate(-8 ' + x + ' ' + y.toFixed(1) + ')" style="--i:' + i + '"/>';
+    }
+    g.innerHTML = out;
+  })();
+
+  /* ---------- your music ---------- */
+  // The song is a file published next to this page, named music.mp3 (any audio file works if you change the name here).
+  var MUSIC_FILE = 'music.mp3';
+  var audio = new Audio();
+  audio.loop = true; audio.preload = 'none'; audio.volume = 0.7;
+  var musicOn = false, fadeTimer = 0, MUSIC_VOL = 0.7;
+  function fadeTo(v, ms, done) {
+    clearInterval(fadeTimer);
+    var from = audio.volume, t0 = performance.now();
+    fadeTimer = setInterval(function () {
+      var k = clamp((performance.now() - t0) / ms);
+      audio.volume = clamp(from + (v - from) * k);
+      if (k >= 1) { clearInterval(fadeTimer); if (done) done(); }
+    }, 50);
+  }
+  function labelMusic() {
+    btnMusic.textContent = '♪ Music: ' + (musicOn ? 'on' : 'off');
+    hintMusic.textContent = musicOn ? '♪ Music is on' : '♪ Turn music on';
+    btnMusic.setAttribute('aria-pressed', String(musicOn));
+    hintMusic.setAttribute('aria-pressed', String(musicOn));
+  }
+  function musicUnavailable() {
+    musicOn = false;
+    btnMusic.disabled = true; hintMusic.disabled = true;
+    btnMusic.textContent = 'Music unavailable'; hintMusic.textContent = 'Music unavailable';
+  }
+  audio.addEventListener('error', function () { if (audio.getAttribute('src')) musicUnavailable(); });
+  function setMusic(on) {
+    if (on) {
+      if (!audio.getAttribute('src')) audio.src = MUSIC_FILE;
+      musicOn = true;
+      audio.volume = 0;
+      var p = audio.play();
+      if (p && p.catch) p.catch(function () { if (!btnMusic.disabled) { musicOn = false; labelMusic(); } });
+      fadeTo(MUSIC_VOL, 1500);
+    } else {
+      musicOn = false;
+      fadeTo(0, 500, function () { audio.pause(); });
+    }
+    labelMusic();
+  }
+  btnMusic.addEventListener('click', function () { setMusic(!musicOn); });
+  hintMusic.addEventListener('click', function () { setMusic(!musicOn); });
+
+  /* ---------- enter, then the question ---------- */
+  $('enter').addEventListener('click', function () {
+    story.hidden = false;
+    controls.hidden = false;
+    root.classList.remove('locked');
+    window.scrollTo(0, 0);
+    anchors();
+    openEl.classList.add('leaving');
+    setTimeout(function () { openEl.hidden = true; }, calm ? 0 : 1400);
+    try { titleEl.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+  });
+
+  $('yes').addEventListener('click', function () {
+    $('askBody').style.display = 'none';
+    $('result').hidden = false;
+    try { $('resultTitle').focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+    if (!calm) { burst(70); setTimeout(function () { burst(50); }, 700); setTimeout(function () { burst(40); }, 1500); }
+  });
+  $('later').addEventListener('click', function () {
+    $('note').textContent = 'Of course. Take all the time you need. Thank you for reading this, and for being exactly who you are.';
+  });
+
+  /* ---------- wire up ---------- */
+  var lw = window.innerWidth, lh = window.innerHeight;
+  window.addEventListener('resize', function () {
+    if (window.innerWidth !== lw || Math.abs(window.innerHeight - lh) > 140) {
+      lw = window.innerWidth; lh = window.innerHeight; resize();
+    }
+    anchors();
+    if (calm) renderStatic();
+  });
+  window.addEventListener('scroll', function () { if (calm) renderStatic(); }, { passive: true });
+  window.addEventListener('load', anchors);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(anchors);
+  mq.addEventListener && mq.addEventListener('change', function (e) { if (e.matches !== calm) setCalm(e.matches); });
+
+  resize();
+  if (calm) { root.classList.add('calm'); btnCalm.setAttribute('aria-pressed', 'true'); btnCalm.textContent = 'Calm mode: on'; T = 3; draw(); }
+  else { startLoop(); }
+})();
+</script>
+
+</body></html>
